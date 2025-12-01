@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Detector - AI Text Analysis</title>
+    <style>
+        :root {
+            --color-primary-hover: var(--color-teal-600);
+            --color-primary-active: var(--color-teal-700);
+            --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-btn-primary-text: var(--color-cream-50);
+            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-error: var(--color-red-500);
+            --color-success: var(--color-teal-500);
+            --color-warning: var(--color-orange-500);
+            --color-info: var(--color-slate-500);
+            --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
+            --color-select-caret: rgba(var(--color-slate-900-rgb), 0.8);
+
+            /* Common style patterns */
+            --focus-ring: 0 0 0 3px var(--color-focus-ring);
+            --focus-outline: 2px solid var(--color-primary);
+
+            /* Typography */
+            --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system,
+                BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-family-mono: "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo,
+                Monaco, Consolas, monospace;
+            --font-size-xs: 11px;
+            --font-size-sm: 12px;
+            --font-size-base: 14px;
+            --font-size-md: 14px;
+            --font-size-lg: 16px;
+            --font-size-xl: 18px;
+            --font-size-2xl: 20px;
+            --font-size-3xl: 24px;
+            --font-size-4xl: 30px;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 550;
+            --font-weight-bold: 600;
+            --line-height-tight: 1.2;
+            --line-height-normal: 1.5;
+            --letter-spacing-tight: -0.01em;
+
+            /* Spacing */
+            --space-0: 0;
+            --space-1: 1px;
+            --space-2: 2px;
+            --space-4: 4px;
+            --space-6: 6px;
+            --space-8: 8px;
+            --space-10: 10px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+
+            /* Border Radius */
+            --radius-sm: 6px;
+            --radius-base: 8px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-full: 9999px;
+
+            /* Shadows */
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04),
+                0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04),
+                0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+
+            /* Animation */
+            --duration-fast: 150ms;
+            --duration-normal: 250ms;
+            --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* Emotion Colors */
+            --emotion-happy: #22c55e;
+            --emotion-sad: #3b82f6;
+            --emotion-angry: #ef4444;
+            --emotion-fearful: #f97316;
+            --emotion-neutral: #6b7280;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-teal-300-rgb: 50, 184, 198;
+                --color-gray-300-rgb: 167, 169, 169;
+                --color-gray-200-rgb: 245, 245, 245;
+
+                --color-bg-1: rgba(29, 78, 216, 0.15);
+                --color-bg-2: rgba(180, 83, 9, 0.15);
+                --color-bg-3: rgba(21, 128, 61, 0.15);
+                --color-bg-4: rgba(185, 28, 28, 0.15);
+                --color-bg-5: rgba(107, 33, 168, 0.15);
+                --color-bg-6: rgba(194, 65, 12, 0.15);
+                --color-bg-7: rgba(190, 24, 93, 0.15);
+                --color-bg-8: rgba(8, 145, 178, 0.15);
+
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-primary-hover: var(--color-teal-400);
+                --color-primary-active: var(--color-teal-800);
+                --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+                --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+                --color-secondary-active: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-error: var(--color-red-400);
+                --color-success: var(--color-teal-300);
+                --color-warning: var(--color-orange-400);
+                --color-info: var(--color-gray-300);
+                --color-focus-ring: rgba(var(--color-teal-300-rgb), 0.4);
+                --color-btn-primary-text: var(--color-slate-900);
+                --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+                --color-card-border-inner: rgba(var(--color-gray-400-rgb), 0.15);
+                --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        @font-face {
+            font-family: 'FKGroteskNeue';
+            src: url('https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2') format('woff2');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: var(--font-size-base);
+            font-family: var(--font-family-base);
+            line-height: var(--line-height-normal);
+            color: var(--color-text);
+            background-color: var(--color-background);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: var(--space-24);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-32);
+        }
+
+        .header h1 {
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text);
+            margin-bottom: var(--space-12);
+            letter-spacing: var(--letter-spacing-tight);
+        }
+
+        .header p {
+            font-size: var(--font-size-lg);
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: var(--space-24);
+            margin-bottom: var(--space-24);
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .history-section {
+                order: 3;
+            }
+        }
+
+        .card {
+            background-color: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            box-shadow: var(--shadow-sm);
+            padding: var(--space-24);
+        }
+
+        .input-section {
+            margin-bottom: var(--space-24);
+        }
+
+        .form-label {
+            display: block;
+            font-weight: var(--font-weight-medium);
+            font-size: var(--font-size-base);
+            color: var(--color-text);
+            margin-bottom: var(--space-8);
+        }
+
+        .textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: var(--space-12);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family-base);
+            color: var(--color-text);
+            background-color: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            resize: vertical;
+            transition: border-color var(--duration-fast) var(--ease-standard);
+        }
+
+        .textarea:focus {
+            outline: var(--focus-outline);
+            border-color: var(--color-primary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: var(--space-12);
+            margin-top: var(--space-12);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-10) var(--space-20);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-standard);
+            border: none;
+            font-family: var(--font-family-base);
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-secondary-hover);
+        }
+
+        .btn:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .results-section {
+            display: none;
+            margin-bottom: var(--space-24);
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .primary-emotion {
+            text-align: center;
+            padding: var(--space-32);
+            background: var(--color-bg-1);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-24);
+        }
+
+        .emotion-emoji {
+            font-size: 72px;
+            margin-bottom: var(--space-16);
+        }
+
+        .emotion-name {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-8);
+        }
+
+        .emotion-confidence {
+            font-size: var(--font-size-xl);
+            color: var(--color-text-secondary);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .emotion-bars {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-16);
+        }
+
+        .emotion-bar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+
+        .emotion-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .emotion-bar-label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .emotion-bar-emoji {
+            font-size: var(--font-size-xl);
+        }
+
+        .emotion-bar-value {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .emotion-bar-track {
+            height: 24px;
+            background: var(--color-secondary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .emotion-bar-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width var(--duration-normal) var(--ease-standard);
+            opacity: 0.9;
+        }
+
+        .examples-section {
+            margin-top: var(--space-24);
+        }
+
+        .section-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--space-16);
+            color: var(--color-text);
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-12);
+        }
+
+        .example-btn {
+            padding: var(--space-12);
+            text-align: left;
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            transition: all var(--duration-fast) var(--ease-standard);
+            font-family: var(--font-family-base);
+            font-size: var(--font-size-sm);
+            color: var(--color-text);
+        }
+
+        .example-btn:hover {
+            background: var(--color-secondary);
+            border-color: var(--color-primary);
+        }
+
+        .example-text {
+            font-style: italic;
+            margin-bottom: var(--space-4);
+        }
+
+        .example-label {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-secondary);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .history-section {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .history-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-12);
+        }
+
+        .history-item {
+            padding: var(--space-12);
+            background: var(--color-background);
+            border-radius: var(--radius-base);
+            border: 1px solid var(--color-border);
+        }
+
+        .history-emotion {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            margin-bottom: var(--space-6);
+        }
+
+        .history-emoji {
+            font-size: var(--font-size-xl);
+        }
+
+        .history-emotion-name {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-base);
+        }
+
+        .history-confidence {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-secondary);
+        }
+
+        .history-text {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            margin-top: var(--space-6);
+            font-style: italic;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--space-32);
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-12);
+        }
+
+        .empty-state-text {
+            font-size: var(--font-size-base);
+        }
+
+        /* Camera/Tab Styles */
+        .tabs-nav {
+            display: flex;
+            width: 100%;
+            margin-bottom: var(--space-24);
+            gap: var(--space-8);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: var(--space-12) var(--space-16);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            background: var(--color-bg-1);
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            cursor: pointer;
+            transition: background var(--duration-fast), color var(--duration-fast);
+        }
+
+        .tab-btn.active {
+            background: var(--color-primary);
+            color: var(--color-btn-primary-text);
+            border-bottom: 2px solid var(--color-primary);
+            z-index: 2;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-instructions {
+            margin-bottom: var(--space-16);
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-base);
+        }
+
+        .camera-note {
+            display: block;
+            margin-top: var(--space-4);
+            color: var(--color-info);
+            font-size: var(--font-size-xs);
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: var(--space-12);
+            margin-bottom: var(--space-12);
+        }
+
+        .camera-view-section {
+            width: 100%;
+            max-width: 660px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .camera-content {
+            position: relative;
+            width: 640px;
+            height: 480px;
+            background: var(--color-bg-1);
+            border-radius: var(--radius-lg);
+        }
+
+        #videoFeed,
+        #cameraCanvas {
+            border-radius: var(--radius-lg);
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #cameraCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            background: transparent;
+        }
+
+        .camera-error {
+            color: var(--color-error);
+            font-weight: var(--font-weight-semibold);
+            margin-top: var(--space-8);
+            font-size: var(--font-size-base);
+            background: var(--color-secondary);
+            border-radius: var(--radius-base);
+            padding: var(--space-8);
+        }
+
+        .camera-performance {
+            font-size: var(--font-size-xs);
+            color: var(--color-info);
+            margin-top: var(--space-4);
+            text-align: right;
+        }
+
+        .camera-results-section {
+            margin-top: var(--space-16);
+        }
+
+        .camera-section .primary-emotion,
+        .camera-section .emotion-bars {
+            margin-bottom: var(--space-16);
+        }
+
+        /* Hide video element, overlay canvas above */
+        .camera-content {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #videoFeed {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        #cameraCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .camera-content {
+                width: 100%;
+                height: auto;
+            }
+
+            #cameraCanvas,
+            #videoFeed {
+                width: 100vw;
+                max-width: 440px;
+                height: auto;
+            }
+
+            .camera-results-section,
+            .camera-view-section {
+                max-width: 100vw;
+            }
+        }
+
+        /* Camera Mode emotion bars - re-use styles */
+        /* Responsive tab grid */
+        @media (max-width: 968px) {
+            .tabs-nav {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                border-radius: var(--radius-lg);
+                margin-bottom: var(--space-4);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎭 Emotion Detector</h1>
+        </header>
+
+        <div class="main-grid">
+            <div class="main-content">
+                <div class="card input-section">
+                    <div class="tab-instructions">Enter your text for emotion detection. You can also select an
+                        example below!</div>
+                    <label class="form-label" for="textInput">Enter your text</label>
+                    <textarea id="textInput" class="textarea"
+                        placeholder="Type something to analyze... For example: 'I'm so excited about this amazing opportunity!'"></textarea>
+                    <div class="button-group">
+                        <button id="analyzeBtn" class="btn btn-primary">Analyze Emotion</button>
+                        <button id="clearBtn" class="btn btn-secondary">Clear</button>
+                    </div>
+                </div>
+                <div class="card results-section" id="resultsSection">
+                    <div class="primary-emotion" id="primaryEmotion">
+                        <div class="emotion-emoji" id="primaryEmoji">😊</div>
+                        <div class="emotion-name" id="primaryName">Happy</div>
+                        <div class="emotion-confidence" id="primaryConfidence">95% Confidence</div>
+                    </div>
+                    <h3 class="section-title">All Emotions</h3>
+                    <div class="emotion-bars" id="emotionBars">
+                        <!-- Emotion bars will be generated here -->
+                    </div>
+                </div>
+                <div class="card examples-section">
+                    <h3 class="section-title">Try These Examples</h3>
+                    <div class="examples-grid" id="examplesGrid">
+                        <!-- Examples will be generated here -->
+                    </div>
+                </div>
+
+
+            </div>
+
+            <!-- History Section (shared) -->
+            <div class="card history-section">
+                <h3 class="section-title">Recent Analysis</h3>
+                <ul class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div class="empty-state-text">No analysis yet. Start by entering some text or use the camera!
+                        </div>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- TensorFlow.js and face-api.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <!-- Chart.js for emotion history graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="afinn.js"></script>
+    <script>
+        // ---- EMOTION DATA ----
+        // ---- EMOTION DATA ----
+        // Keywords for distinguishing negative emotions (since AFINN is just positive/negative)
+        const EMOTION_KEYWORDS = {
+            angry: ['hate', 'furious', 'angry', 'mad', 'rage', 'kill', 'fight', 'argument', 'stupid', 'idiot', 'annoy', 'hostile', 'violent'],
+            fearful: ['scared', 'afraid', 'fear', 'terrified', 'anxious', 'nervous', 'worry', 'worried', 'panic', 'danger', 'horror', 'fright'],
+            sad: ['sad', 'cry', 'lonely', 'miss', 'heartbroken', 'grief', 'sorry', 'depressed', 'unhappy', 'tears', 'hurt', 'pain', 'loss']
+        };
+
+        const EMOTIONS = {
+            happy: { name: "Happy", emoji: "😊", color: "#22c55e" },
+            sad: { name: "Sad", emoji: "😢", color: "#3b82f6" },
+            angry: { name: "Angry", emoji: "😠", color: "#ef4444" },
+            fearful: { name: "Fearful", emoji: "😨", color: "#f97316" },
+            surprised: { name: "Surprised", emoji: "😮", color: "#ec4899" },
+            disgusted: { name: "Disgusted", emoji: "🤢", color: "#a16207" },
+            neutral: { name: "Neutral", emoji: "😐", color: "#6b7280" },
+        };
+        const EXAMPLES = [
+            { text: "I just got promoted at work!", expected: "Happy" },
+            { text: "I can't believe they left without saying goodbye", expected: "Sad" },
+            { text: "This is absolutely ridiculous and infuriating", expected: "Angry" },
+            { text: "What if something goes wrong with the presentation", expected: "Fearful" },
+            { text: "The meeting is scheduled for tomorrow at 2pm", expected: "Neutral" }
+        ];
+        let analysisHistory = [];
+
+        function tokenize(text) {
+            return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(word => word.length);
+        }
+
+        function detectEmotion(text) {
+            if (!text || text.trim().length === 0) return null;
+            const tokens = tokenize(text);
+
+            // 1. Calculate Sentiment Score using AFINN
+            let score = 0;
+            let wordsMatched = 0;
+
+            tokens.forEach(token => {
+                if (typeof AFINN !== 'undefined' && AFINN[token]) {
+                    score += AFINN[token];
+                    wordsMatched++;
+                }
+            });
+
+            // 2. Detect specific emotion keywords
+            const keywordCounts = { angry: 0, fearful: 0, sad: 0 };
+            tokens.forEach(token => {
+                if (EMOTION_KEYWORDS.angry.includes(token)) keywordCounts.angry++;
+                if (EMOTION_KEYWORDS.fearful.includes(token)) keywordCounts.fearful++;
+                if (EMOTION_KEYWORDS.sad.includes(token)) keywordCounts.sad++;
+            });
+
+            // 3. Determine Primary Emotion
+            let primary = 'neutral';
+            let confidence = 50; // Base confidence
+
+            if (score > 0) {
+                primary = 'happy';
+                confidence = Math.min(50 + (score * 10), 95);
+            } else if (score < 0) {
+                // Negative sentiment - distinguish between sad, angry, fearful
+                let maxCount = 0;
+                let bestNeg = 'sad'; // Default negative if no specific keywords found
+
+                // Check if we have specific keywords to guide us
+                ['angry', 'fearful', 'sad'].forEach(em => {
+                    if (keywordCounts[em] > maxCount) {
+                        maxCount = keywordCounts[em];
+                        bestNeg = em;
+                    }
+                });
+
+                // If no keywords but negative score, try to infer from intensity or default to sad
+                if (maxCount === 0) {
+                    if (score < -3) bestNeg = 'angry'; // Very negative might be angry
+                    else bestNeg = 'sad';
+                }
+
+                primary = bestNeg;
+                confidence = Math.min(50 + (Math.abs(score) * 10), 95);
+            } else {
+                // Neutral score
+                if (wordsMatched === 0) confidence = 40; // Low confidence if no words matched
+                else confidence = 80; // High confidence if words matched but canceled out or were neutral
+            }
+
+            // 4. Construct Result Scores (Heuristic distribution)
+            const scores = {
+                happy: score > 0 ? 50 + score * 10 : 5,
+                sad: primary === 'sad' ? 50 + Math.abs(score) * 10 : 10,
+                angry: primary === 'angry' ? 50 + Math.abs(score) * 10 : 10,
+                fearful: primary === 'fearful' ? 50 + Math.abs(score) * 10 : 10,
+                neutral: score === 0 ? 60 : 10
+            };
+
+            // Normalize scores to percentages
+            const total = Object.values(scores).reduce((a, b) => a + b, 0);
+            Object.keys(scores).forEach(k => scores[k] = Math.round((scores[k] / total) * 100));
+
+            return {
+                primary,
+                confidence: Math.round(confidence),
+                scores,
+                text
+            };
+        }
+        function displayResults(result) {
+            const resultsSection = document.getElementById('resultsSection');
+            const primaryEmoji = document.getElementById('primaryEmoji');
+            const primaryName = document.getElementById('primaryName');
+            const primaryConfidence = document.getElementById('primaryConfidence');
+            const emotionBars = document.getElementById('emotionBars');
+            resultsSection.classList.add('visible');
+            const emotion = EMOTIONS[result.primary] || EMOTIONS['neutral'];
+            primaryEmoji.textContent = emotion.emoji;
+            primaryName.textContent = emotion.name;
+            primaryConfidence.textContent = `${result.confidence}% Confidence`;
+            primaryName.style.color = emotion.color;
+            // Bars (for text mode, only 5 emotions)
+            emotionBars.innerHTML = '';
+            ['happy', 'sad', 'angry', 'fearful', 'neutral'].forEach(key => {
+                const emotionInfo = EMOTIONS[key];
+                const score = result.scores[key] || 0;
+                const barDiv = document.createElement('div');
+                barDiv.className = 'emotion-bar';
+                barDiv.innerHTML = `
+                    <div class="emotion-bar-header">
+                        <div class="emotion-bar-label">
+                            <span class="emotion-bar-emoji">${emotionInfo.emoji}</span>
+                            <span>${emotionInfo.name}</span>
+                        </div>
+                        <span class="emotion-bar-value">${score}%</span>
+                    </div>
+                    <div class="emotion-bar-track">
+                        <div class="emotion-bar-fill" style="width: ${score}%; background-color: ${emotionInfo.color};"></div>
+                    </div>
+                `;
+                emotionBars.appendChild(barDiv);
+            });
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        function addToHistory(result) {
+            analysisHistory.unshift(result);
+            if (analysisHistory.length > 15) analysisHistory.pop();
+            updateHistoryDisplay();
+        }
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            if (analysisHistory.length === 0) {
+                historyList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <div class="empty-state-text">No analysis yet. Start by entering some text or use the camera!</div>
+                </div>`;
+                return;
+            }
+            historyList.innerHTML = '';
+            analysisHistory.forEach(result => {
+                const emotion = EMOTIONS[result.primary] || EMOTIONS['neutral'];
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                const textOrSource = result.text ? result.text : (result.mode === 'camera' ? '[Camera]' : 'Input');
+                li.innerHTML = `
+                    <div class="history-emotion">
+                        <span class="history-emoji">${emotion.emoji}</span>
+                        <span class="history-emotion-name" style="color: ${emotion.color};">${emotion.name}</span>
+                        <span class="history-confidence">(${result.confidence}%)</span>
+                    </div>
+                    <div class="history-text" title="${textOrSource}">${textOrSource}</div>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+        function generateExamples() {
+            const examplesGrid = document.getElementById('examplesGrid');
+            examplesGrid.innerHTML = '';
+            EXAMPLES.forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.innerHTML = `<div class="example-text">"${example.text}"</div><div class="example-label">Expected: ${example.expected}</div>`;
+                btn.addEventListener('click', () => {
+                    document.getElementById('textInput').value = example.text;
+                    analyzeText();
+                });
+                examplesGrid.appendChild(btn);
+            });
+        }
+        function analyzeText() {
+            const textInput = document.getElementById('textInput');
+            const text = textInput.value.trim();
+            if (!text) { alert('Please enter some text to analyze.'); return; }
+            const result = detectEmotion(text);
+            if (result) {
+                displayResults(result);
+                addToHistory(result);
+            }
+        }
+        function clearInput() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('resultsSection').classList.remove('visible');
+        }
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeText);
+        document.getElementById('clearBtn').addEventListener('click', clearInput);
+        document.getElementById('textInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) analyzeText();
+        });
+        generateExamples();
+
+    </script>
+</body>
+
+</html>

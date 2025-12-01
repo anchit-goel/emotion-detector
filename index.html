@@ -713,116 +713,28 @@
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <!-- Chart.js for emotion history graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="afinn.js"></script>
     <script>
         // ---- EMOTION DATA ----
         // ---- EMOTION DATA ----
         // Keywords for distinguishing negative emotions (since AFINN is just positive/negative)
-        const EMOTION_KEYWORDS = {
-            angry: ['hate', 'furious', 'angry', 'mad', 'rage', 'kill', 'fight', 'argument', 'stupid', 'idiot', 'annoy', 'hostile', 'violent'],
-            fearful: ['scared', 'afraid', 'fear', 'terrified', 'anxious', 'nervous', 'worry', 'worried', 'panic', 'danger', 'horror', 'fright'],
-            sad: ['sad', 'cry', 'lonely', 'miss', 'heartbroken', 'grief', 'sorry', 'depressed', 'unhappy', 'tears', 'hurt', 'pain', 'loss']
-        };
+        // Client-side logic removed. Analysis is now handled by Python backend.
 
         const EMOTIONS = {
-            happy: { name: "Happy", emoji: "😊", color: "#22c55e" },
-            sad: { name: "Sad", emoji: "😢", color: "#3b82f6" },
-            angry: { name: "Angry", emoji: "😠", color: "#ef4444" },
-            fearful: { name: "Fearful", emoji: "😨", color: "#f97316" },
-            surprised: { name: "Surprised", emoji: "😮", color: "#ec4899" },
-            disgusted: { name: "Disgusted", emoji: "🤢", color: "#a16207" },
-            neutral: { name: "Neutral", emoji: "😐", color: "#6b7280" },
+            happy: { emoji: '😊', name: 'Happy', color: 'var(--emotion-happy)' },
+            sad: { emoji: '😢', name: 'Sad', color: 'var(--emotion-sad)' },
+            angry: { emoji: '😠', name: 'Angry', color: 'var(--emotion-angry)' },
+            fearful: { emoji: '😨', name: 'Fearful', color: 'var(--emotion-fearful)' },
+            neutral: { emoji: '😐', name: 'Neutral', color: 'var(--emotion-neutral)' }
         };
+
         const EXAMPLES = [
-            { text: "I just got promoted at work!", expected: "Happy" },
-            { text: "I can't believe they left without saying goodbye", expected: "Sad" },
-            { text: "This is absolutely ridiculous and infuriating", expected: "Angry" },
-            { text: "What if something goes wrong with the presentation", expected: "Fearful" },
-            { text: "The meeting is scheduled for tomorrow at 2pm", expected: "Neutral" }
+            { text: "I am absolutely furious about this situation!", expected: "Angry" },
+            { text: "I'm so excited to see you!", expected: "Happy" },
+            { text: "I feel so lonely and sad today.", expected: "Sad" },
+            { text: "The movie was okay, nothing special.", expected: "Neutral" }
         ];
+
         let analysisHistory = [];
-
-        function tokenize(text) {
-            return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(word => word.length);
-        }
-
-        function detectEmotion(text) {
-            if (!text || text.trim().length === 0) return null;
-            const tokens = tokenize(text);
-
-            // 1. Calculate Sentiment Score using AFINN
-            let score = 0;
-            let wordsMatched = 0;
-
-            tokens.forEach(token => {
-                if (typeof AFINN !== 'undefined' && AFINN[token]) {
-                    score += AFINN[token];
-                    wordsMatched++;
-                }
-            });
-
-            // 2. Detect specific emotion keywords
-            const keywordCounts = { angry: 0, fearful: 0, sad: 0 };
-            tokens.forEach(token => {
-                if (EMOTION_KEYWORDS.angry.includes(token)) keywordCounts.angry++;
-                if (EMOTION_KEYWORDS.fearful.includes(token)) keywordCounts.fearful++;
-                if (EMOTION_KEYWORDS.sad.includes(token)) keywordCounts.sad++;
-            });
-
-            // 3. Determine Primary Emotion
-            let primary = 'neutral';
-            let confidence = 50; // Base confidence
-
-            if (score > 0) {
-                primary = 'happy';
-                confidence = Math.min(50 + (score * 10), 95);
-            } else if (score < 0) {
-                // Negative sentiment - distinguish between sad, angry, fearful
-                let maxCount = 0;
-                let bestNeg = 'sad'; // Default negative if no specific keywords found
-
-                // Check if we have specific keywords to guide us
-                ['angry', 'fearful', 'sad'].forEach(em => {
-                    if (keywordCounts[em] > maxCount) {
-                        maxCount = keywordCounts[em];
-                        bestNeg = em;
-                    }
-                });
-
-                // If no keywords but negative score, try to infer from intensity or default to sad
-                if (maxCount === 0) {
-                    if (score < -3) bestNeg = 'angry'; // Very negative might be angry
-                    else bestNeg = 'sad';
-                }
-
-                primary = bestNeg;
-                confidence = Math.min(50 + (Math.abs(score) * 10), 95);
-            } else {
-                // Neutral score
-                if (wordsMatched === 0) confidence = 40; // Low confidence if no words matched
-                else confidence = 80; // High confidence if words matched but canceled out or were neutral
-            }
-
-            // 4. Construct Result Scores (Heuristic distribution)
-            const scores = {
-                happy: score > 0 ? 50 + score * 10 : 5,
-                sad: primary === 'sad' ? 50 + Math.abs(score) * 10 : 10,
-                angry: primary === 'angry' ? 50 + Math.abs(score) * 10 : 10,
-                fearful: primary === 'fearful' ? 50 + Math.abs(score) * 10 : 10,
-                neutral: score === 0 ? 60 : 10
-            };
-
-            // Normalize scores to percentages
-            const total = Object.values(scores).reduce((a, b) => a + b, 0);
-            Object.keys(scores).forEach(k => scores[k] = Math.round((scores[k] / total) * 100));
-
-            return {
-                primary,
-                confidence: Math.round(confidence),
-                scores,
-                text
-            };
-        }
         function displayResults(result) {
             const resultsSection = document.getElementById('resultsSection');
             const primaryEmoji = document.getElementById('primaryEmoji');
@@ -904,14 +816,33 @@
                 examplesGrid.appendChild(btn);
             });
         }
-        function analyzeText() {
+        async function analyzeText() {
             const textInput = document.getElementById('textInput');
             const text = textInput.value.trim();
             if (!text) { alert('Please enter some text to analyze.'); return; }
-            const result = detectEmotion(text);
-            if (result) {
-                displayResults(result);
-                addToHistory(result);
+
+            const btn = document.getElementById('analyzeBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Analyzing...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const result = await response.json();
+                if (result) {
+                    displayResults(result);
+                    addToHistory(result);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to analyze text. Ensure the server is running.');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
         }
         function clearInput() {
